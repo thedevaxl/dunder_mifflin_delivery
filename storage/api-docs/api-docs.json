@@ -1,0 +1,197 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Dunder Mifflin Delivery API",
+        "description": "API documentation for the Dunder Mifflin delivery service",
+        "contact": {
+            "email": "support@dundermifflin.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://my-default-host.com",
+            "description": "API Server"
+        }
+    ],
+    "paths": {
+        "/api/museum": {
+            "get": {
+                "summary": "Search for Nearest Museums",
+                "description": "List museums by proximity in a given municipality",
+                "operationId": "37c2c67440b752f27aae309c8448cdce",
+                "parameters": [
+                    {
+                        "name": "m",
+                        "in": "query",
+                        "description": "Municipality",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "lat",
+                        "in": "query",
+                        "description": "Latitude",
+                        "required": true,
+                        "schema": {
+                            "type": "number",
+                            "format": "float"
+                        }
+                    },
+                    {
+                        "name": "long",
+                        "in": "query",
+                        "description": "Longitude",
+                        "required": true,
+                        "schema": {
+                            "type": "number",
+                            "format": "float"
+                        }
+                    },
+                    {
+                        "name": "r",
+                        "in": "query",
+                        "description": "Radius (optional)",
+                        "schema": {
+                            "type": "number",
+                            "format": "float"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Museum"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Create Museum",
+                "description": "Register a new museum",
+                "operationId": "4c62a6f23d83b0ab0222352bede9d1b9",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "lat",
+                                    "long",
+                                    "region",
+                                    "province",
+                                    "municipality"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "lat": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "long": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "region": {
+                                        "type": "string"
+                                    },
+                                    "province": {
+                                        "type": "string"
+                                    },
+                                    "municipality": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "resource": {
+                                            "$ref": "#/components/schemas/Museum"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Museum": {
+                "title": "Museum",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Museo nazionale di Capodimonte"
+                    },
+                    "lat": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 40.9458663
+                    },
+                    "long": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 14.3715925
+                    },
+                    "region": {
+                        "type": "string",
+                        "example": "Campania"
+                    },
+                    "province": {
+                        "type": "string",
+                        "example": "NA"
+                    },
+                    "municipality": {
+                        "type": "string",
+                        "example": "Napoli"
+                    },
+                    "distance": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 100
+                    }
+                },
+                "type": "object"
+            }
+        }
+    }
+}
