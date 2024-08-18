@@ -16,8 +16,8 @@ class Museum extends Model
      */
     protected $fillable = [
         'name',
-        'lat',
-        'long',
+        'latitude',
+        'longitude',
         'region',
         'province',
         'municipality',
@@ -29,8 +29,8 @@ class Museum extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'lat' => 'float',
-        'long' => 'float',
+        'latitude' => 'float',
+        'longitude' => 'float',
     ];
 
     /**

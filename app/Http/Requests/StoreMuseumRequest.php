@@ -23,8 +23,8 @@ class StoreMuseumRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'lat' => 'required|numeric',
-            'long' => 'required|numeric',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
             'region' => 'required|string|max:255',
             'province' => 'required|string|max:255',
             'municipality' => 'required|string|max:255',

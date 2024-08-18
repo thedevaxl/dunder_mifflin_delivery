@@ -24,8 +24,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('/login', [AuthController::class, 'login']);
 
 
+Route::get('/museums', [MuseumController::class, 'index']);
+Route::get('/museum', [MuseumController::class, 'search']);
+
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/museum', [MuseumController::class, 'store']);
 });
-
-Route::get('/museum', [MuseumController::class, 'search']);

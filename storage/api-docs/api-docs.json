@@ -81,8 +81,11 @@
         },
         "/api/museum": {
             "get": {
+                "tags": [
+                    "Museum"
+                ],
                 "summary": "Search for Nearest Museums",
-                "description": "List museums by proximity in a given municipality",
+                "description": "List museums by proximity in a given municipality. Filters can be applied for latitude, longitude, and radius.",
                 "operationId": "37c2c67440b752f27aae309c8448cdce",
                 "parameters": [
                     {
@@ -95,7 +98,7 @@
                         }
                     },
                     {
-                        "name": "lat",
+                        "name": "latitude",
                         "in": "query",
                         "description": "Latitude",
                         "required": true,
@@ -105,7 +108,7 @@
                         }
                     },
                     {
-                        "name": "long",
+                        "name": "longitude",
                         "in": "query",
                         "description": "Longitude",
                         "required": true,
@@ -117,7 +120,7 @@
                     {
                         "name": "r",
                         "in": "query",
-                        "description": "Radius (optional)",
+                        "description": "Radius (optional, in kilometers)",
                         "schema": {
                             "type": "number",
                             "format": "float"
@@ -157,8 +160,8 @@
                             "schema": {
                                 "required": [
                                     "name",
-                                    "lat",
-                                    "long",
+                                    "latitude",
+                                    "longitude",
                                     "region",
                                     "province",
                                     "municipality"
@@ -168,12 +171,12 @@
                                         "type": "string",
                                         "example": "Museo nazionale di Capodimonte"
                                     },
-                                    "lat": {
+                                    "latitude": {
                                         "type": "number",
                                         "format": "float",
                                         "example": 40.9458662999999
                                     },
-                                    "long": {
+                                    "longitude": {
                                         "type": "number",
                                         "format": "float",
                                         "example": 14.3715925
@@ -232,6 +235,34 @@
                     }
                 ]
             }
+        },
+        "/api/museums": {
+            "get": {
+                "tags": [
+                    "Museum"
+                ],
+                "summary": "List all museums",
+                "description": "Retrieve a list of all museums in the database.",
+                "operationId": "a6eac7c1817c777fc8e5c99d14656e7d",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Museum"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -247,12 +278,12 @@
                         "type": "string",
                         "example": "Museo nazionale di Capodimonte"
                     },
-                    "lat": {
+                    "latitude": {
                         "type": "number",
                         "format": "float",
                         "example": 40.9458663
                     },
-                    "long": {
+                    "longitude": {
                         "type": "number",
                         "format": "float",
                         "example": 14.3715925
