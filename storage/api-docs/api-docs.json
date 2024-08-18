@@ -10,11 +10,75 @@
     },
     "servers": [
         {
-            "url": "http://my-default-host.com",
+            "url": "http://localhost:9000",
             "description": "API Server"
         }
     ],
     "paths": {
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login",
+                "description": "Log in to get the authentication token",
+                "operationId": "loginUser",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful login",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "access_token": {
+                                            "type": "string",
+                                            "example": "your-access-token"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
         "/api/museum": {
             "get": {
                 "summary": "Search for Nearest Museums",
@@ -80,9 +144,12 @@
                 }
             },
             "post": {
+                "tags": [
+                    "Museum"
+                ],
                 "summary": "Create Museum",
-                "description": "Register a new museum",
-                "operationId": "4c62a6f23d83b0ab0222352bede9d1b9",
+                "description": "Register a new museum. Requires user authentication.",
+                "operationId": "storeMuseum",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -98,24 +165,30 @@
                                 ],
                                 "properties": {
                                     "name": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "Museo nazionale di Capodimonte"
                                     },
                                     "lat": {
                                         "type": "number",
-                                        "format": "float"
+                                        "format": "float",
+                                        "example": 40.9458662999999
                                     },
                                     "long": {
                                         "type": "number",
-                                        "format": "float"
+                                        "format": "float",
+                                        "example": 14.3715925
                                     },
                                     "region": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "Campania"
                                     },
                                     "province": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "NA"
                                     },
                                     "municipality": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "Napoli"
                                     }
                                 },
                                 "type": "object"
@@ -131,7 +204,8 @@
                                 "schema": {
                                     "properties": {
                                         "success": {
-                                            "type": "boolean"
+                                            "type": "boolean",
+                                            "example": true
                                         },
                                         "resource": {
                                             "$ref": "#/components/schemas/Museum"
@@ -142,10 +216,21 @@
                             }
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
                     "400": {
                         "description": "Bad Request"
+                    },
+                    "422": {
+                        "description": "Validation Error"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         }
     },
@@ -192,6 +277,23 @@
                 },
                 "type": "object"
             }
+        },
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
         }
-    }
+    },
+    "tags": [
+        {
+            "name": "Auth",
+            "description": "Auth"
+        },
+        {
+            "name": "Museum",
+            "description": "Museum"
+        }
+    ]
 }

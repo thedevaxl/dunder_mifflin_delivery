@@ -1,61 +1,62 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Models\Museum;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use OpenApi\Annotations as OA;
+use Illuminate\Http\JsonResponse;
+use App\Http\Requests\StoreMuseumRequest;
+use App\Repositories\MuseumRepositoryInterface;
 
 class MuseumController extends Controller
 {
+    protected $museumRepository;
 
-    /**
-     * @OA\Schema(
-     *     schema="Museum",
-     *     type="object",
-     *     title="Museum",
-     *     @OA\Property(property="id", type="integer", example=1),
-     *     @OA\Property(property="name", type="string", example="Museo nazionale di Capodimonte"),
-     *     @OA\Property(property="lat", type="number", format="float", example=40.9458663),
-     *     @OA\Property(property="long", type="number", format="float", example=14.3715925),
-     *     @OA\Property(property="region", type="string", example="Campania"),
-     *     @OA\Property(property="province", type="string", example="NA"),
-     *     @OA\Property(property="municipality", type="string", example="Napoli"),
-     *     @OA\Property(property="distance", type="number", format="float", example=100.0)
-     * )
-     */
+    public function __construct(MuseumRepositoryInterface $museumRepository)
+    {
+        $this->museumRepository = $museumRepository;
+    }
 
     /**
      * @OA\Post(
      *     path="/api/museum",
      *     summary="Create Museum",
-     *     description="Register a new museum",
+     *     description="Register a new museum. Requires user authentication.",
+     *     operationId="storeMuseum",
+     *     tags={"Museum"},
+     *     security={{"sanctum":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
      *             required={"name","lat","long","region","province","municipality"},
-     *             @OA\Property(property="name", type="string"),
-     *             @OA\Property(property="lat", type="number", format="float"),
-     *             @OA\Property(property="long", type="number", format="float"),
-     *             @OA\Property(property="region", type="string"),
-     *             @OA\Property(property="province", type="string"),
-     *             @OA\Property(property="municipality", type="string"),
+     *             @OA\Property(property="name", type="string", example="Museo nazionale di Capodimonte"),
+     *             @OA\Property(property="lat", type="number", format="float", example=40.9458662999999),
+     *             @OA\Property(property="long", type="number", format="float", example=14.3715925),
+     *             @OA\Property(property="region", type="string", example="Campania"),
+     *             @OA\Property(property="province", type="string", example="NA"),
+     *             @OA\Property(property="municipality", type="string", example="Napoli"),
      *         ),
      *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Success",
      *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean"),
-     *             @OA\Property(property="resource", ref="#/components/schemas/Museum"),
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="resource", ref="#/components/schemas/Museum")
      *         )
      *     ),
-     *     @OA\Response(response=400, description="Bad Request")
+     *     @OA\Response(response=401, description="Unauthorized"),
+     *     @OA\Response(response=400, description="Bad Request"),
+     *     @OA\Response(response=422, description="Validation Error")
      * )
      */
-    public function store(Request $request)
+    public function store(StoreMuseumRequest $request): JsonResponse
     {
-        // Your implementation here...
+        $museum = $this->museumRepository->create($request->validated());
+
+        return response()->json([
+            'success' => true,
+            'resource' => $museum
+        ], 200);
     }
 
     /**
