@@ -1,0 +1,57 @@
+version: '3.8'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dunder_mifflin_app
+    container_name: dunder_mifflin_app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: dunder_mifflin_app
+      SERVICE_TAGS: dev
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - ./vendor:/var/www/html/vendor
+      - ./storage:/var/www/html/storage
+    networks:
+      - app-network
+
+  webserver:
+    image: nginx:alpine
+    container_name: dunder_mifflin_webserver
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "9000:80"
+    volumes:
+      - ./:/var/www/html
+      - ./nginx:/etc/nginx/conf.d/
+    networks:
+      - app-network
+
+  db:
+    image: mysql:8.0
+    container_name: dunder_mifflin_db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: dunder_mifflin
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: root_password
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db_data:
