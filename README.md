@@ -1,66 +1,142 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Dunder Mifflin Museum Management Project
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This project is a Laravel-based web application designed for managing museum data across Italy. It includes functionality for adding, searching, and importing museums, as well as visualizing museum locations on a map and analyzing data using a bar chart. The project is dockerized and uses MySQL as the database, Nginx as the web server, and includes a phpMyAdmin service for database management.
 
-## About Laravel
+## Table of Contents
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Setting Up the Environment](#setting-up-the-environment)
+- [Docker Setup](#docker-setup)
+- [Accessing the Application](#accessing-the-application)
+- [Running Migrations and Seeders](#running-migrations-and-seeders)
+- [Swagger Documentation](#swagger-documentation)
+- [phpMyAdmin Access](#phpmyadmin-access)
+- [Testing](#testing)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Requirements
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Docker and Docker Compose installed on your machine.
+- Git installed on your machine.
 
-## Learning Laravel
+## Installation
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+1. **Clone the Repository**
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+   ```bash
+   git clone https://github.com/thedevaxl/dunder_mifflin_delivery.git
+   cd dunder_mifflin_delivery
+   ```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+2. **Setting Up the Environment**
 
-## Laravel Sponsors
+   Copy the `.env.example` file to `.env` and update it with your environment configurations.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+   ```bash
+   cp .env.example .env
+   ```
 
-### Premium Partners
+   Make sure to update the following variables in your `.env` file:
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=db
+   DB_PORT=3306
+   DB_DATABASE=dunder_mifflin
+   DB_USERNAME=user
+   DB_PASSWORD=password
+   ```
 
-## Contributing
+3. **Docker Setup**
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+   Build and start the Docker containers:
 
-## Code of Conduct
+   ```bash
+   docker-compose up --build -d
+   ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+   This command will:
 
-## Security Vulnerabilities
+   - Build the application container (`app`).
+   - Start the Nginx web server container (`webserver`).
+   - Start the MySQL database container (`db`).
+   - Start the phpMyAdmin container (`phpmyadmin`).
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+4. **Install Composer Dependencies**
 
-## License
+   Access the `app` container and install the Composer dependencies:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+   ```bash
+   docker-compose exec app bash
+   composer install
+   ```
+
+## Accessing the Application
+
+- **Web Application:** The application will be available at [http://localhost:9000](http://localhost:9000).
+- **phpMyAdmin:** phpMyAdmin will be accessible at [http://localhost:9001](http://localhost:9001).
+
+## Running Migrations and Seeders
+
+1. **Run Migrations**
+
+   Inside the `app` container, run the following command to create the necessary database tables:
+
+   ```bash
+   php artisan migrate
+   ```
+
+2. **Run Seeders**
+
+   Seed the database with initial data, including user credentials required for accessing protected API endpoints:
+
+   ```bash
+   php artisan db:seed --class=UserSeeder
+   ```
+
+   The seeder will create a default user. Use these credentials to log in via the Swagger documentation or application.
+
+## Swagger Documentation
+
+1. **Generate Swagger Documentation**
+
+   To generate Swagger documentation for the APIs:
+
+   ```bash
+   php artisan l5-swagger:generate
+   ```
+
+2. **Access Swagger Documentation**
+
+   Once generated, the Swagger UI can be accessed at [http://localhost:9000/api/documentation](http://localhost:9000/api/documentation).
+
+   **Note:** Some APIs are protected by Laravel Sanctum. You must log in using the credentials created by the `UserSeeder` to obtain an access token, which you can then use to authenticate requests in the Swagger UI.
+
+## phpMyAdmin Access
+
+phpMyAdmin is available for database management at [http://localhost:9001](http://localhost:9001). Use the credentials specified in your `.env` file:
+
+- **Username:** root
+- **Password:** root_password
+
+## Testing
+
+To run the tests inside the Docker container:
+
+1. **Run the Tests**
+
+   Inside the `app` container, execute:
+
+   ```bash
+   php artisan test
+   ```
+
+   **as the test uses RefreshDatabase it will reset the db which has the User needed for the api**
+
+This will run the PHPUnit tests, including those for API endpoints, to ensure that everything is functioning as expected.
+
+## Conclusion
+
+You now have the Dunder Mifflin Museum Management system set up and ready to use. You can interact with the application through the provided web interface, manage data via phpMyAdmin, and explore the API endpoints using the integrated Swagger documentation.
+
+For further customization or deployment, refer to the Laravel and Docker documentation as needed.
