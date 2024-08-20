@@ -29,4 +29,5 @@ Route::get('/museum', [MuseumController::class, 'search']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/museum', [MuseumController::class, 'store']);
+    Route::post('/museums/import', [MuseumController::class, 'import']);
 });

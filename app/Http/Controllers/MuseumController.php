@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use OpenApi\Annotations as OA;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\StoreMuseumRequest;
+use App\Http\Requests\ImportMuseumsRequest;
 use App\Repositories\MuseumRepositoryInterface;
 
 class MuseumController extends Controller
@@ -140,5 +141,86 @@ class MuseumController extends Controller
         $museums = $this->museumRepository->searchByProximity($municipality, $latitude, $longitude, $radius);
 
         return response()->json($museums, 200);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/museums/import",
+     *     summary="Import Museums from JSON",
+     *     description="Import a list of museums from a JSON file.",
+     *     tags={"Museum"},
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(
+     *                     property="file",
+     *                     type="string",
+     *                     format="binary",
+     *                     description="The JSON file containing museums data"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Museums imported successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Museums imported successfully.")
+     *         )
+     *     ),
+     *     @OA\Response(response=400, description="Bad Request"),
+     *     @OA\Response(response=401, description="Unauthorized")
+     * )
+     */
+    public function import(ImportMuseumsRequest $request): JsonResponse
+    {
+        // Get the file from the request
+        $file = $request->file('file');
+
+        // Read the file content
+        $content = file_get_contents($file);
+
+        // Check if the file content is empty
+        if (empty($content)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'The uploaded file is empty.',
+            ], 422);
+        }
+
+        // Ensure the content is properly encoded as UTF-8
+        $content = mb_convert_encoding($content, 'UTF-8', 'auto');
+
+        // Decode the JSON content
+        $jsonData = json_decode($content, true);
+
+        // Check if the JSON was decoded correctly
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return response()->json([
+                'success' => false,
+                'message' => 'The uploaded file is not valid JSON.',
+            ], 422);
+        }
+
+        // Validate the structure of each item and store the data in the database
+        foreach ($jsonData as $item) {
+            $this->museumRepository->create([
+                'municipality' => $item['ccomune'],
+                'province' => $item['cprovincia'],
+                'region' => $item['cregione'],
+                'name' => $item['cnome'],
+                'latitude' => $item['clatitudine'],
+                'longitude' => $item['clongitudine'],
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Museums imported successfully.'
+        ], 200);
     }
 }

@@ -2,11 +2,13 @@
 
 namespace Tests\Feature;
 
+use Tests\TestCase;
 use App\Models\User;
 use App\Models\Museum;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use App\Repositories\MuseumRepositoryInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 class MuseumControllerTest extends TestCase
 {
@@ -185,6 +187,113 @@ class MuseumControllerTest extends TestCase
                     'updated_at'
                 ]
             ]);
+    }
+
+    public function test_import_museums_successfully(): void
+    {
+
+        $user = User::factory()->create();
+        $this->actingAs($user, 'sanctum');
+
+
+        // Fake the storage
+        Storage::fake('local');
+
+        // Create a fake JSON file
+        $file = UploadedFile::fake()->createWithContent(
+            'museums.json',
+            json_encode([
+                [
+                    "ccomune" => "ALTRO",
+                    "cprovincia" => "ALTRO",
+                    "cregione" => "ALTRO",
+                    "cnome" => "Museo Test",
+                    "clatitudine" => "45.123456",
+                    "clongitudine" => "12.123456"
+                ]
+            ])
+        );
+
+        // Perform the request with the file
+        $response = $this->postJson('/api/museums/import', [
+            'file' => $file,
+        ]);
+
+        // Assert the response status and structure
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'message' => 'Museums imported successfully.'
+            ]);
+
+        // Check if the data is in the database
+        $this->assertDatabaseHas('museums', [
+            'municipality' => 'ALTRO',
+            'province' => 'ALTRO',
+            'region' => 'ALTRO',
+            'name' => 'Museo Test',
+            'latitude' => '45.123456',
+            'longitude' => '12.123456',
+        ]);
+    }
+    public function test_import_museums_validation_error(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user, 'sanctum');
+
+        // Perform the request without uploading a file
+        $response = $this->postJson('/api/museums/import', [
+            'file' => 'not-a-file',
+        ]);
+
+        // Assert the response status and validation errors
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['file']);
+    }
+    public function test_import_museums_with_empty_file(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user, 'sanctum');
+
+        // Fake the storage
+        Storage::fake('local');
+
+        // Create an empty JSON file
+        $file = UploadedFile::fake()->createWithContent('empty_museums.json', '');
+
+        // Perform the request with the empty file
+        $response = $this->postJson('/api/museums/import', [
+            'file' => $file,
+        ]);
+
+        // Assert the response status and structure
+        $response->assertStatus(422)
+            ->assertJson([
+                'success' => false,
+                'message' => 'The uploaded file is empty.',
+            ]);
+    }
+
+    public function test_import_museums_without_file(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user, 'sanctum');
+
+        // Perform the request without uploading a file
+        $response = $this->postJson('/api/museums/import');
+
+        // Assert the response status and validation errors
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['file']);
+    }
+    public function test_import_museums_authentication_error(): void
+    {
+        // Perform the request without uploading a file
+        $response = $this->postJson('/api/museums/import', [
+        ]);
+
+        // Assert the response status
+        $response->assertStatus(401);
     }
 
 }
