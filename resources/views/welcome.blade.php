@@ -3,8 +3,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dunder Mifflin Museum Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         #map {
             height: 400px;
@@ -128,8 +130,14 @@
 
         <!-- Message Area -->
         <div id="message-area" class="mt-3"></div>
+
     </div>
 
+    <!-- Bar Chart Section -->
+    <div class="container my-5">
+        <h3>Museum Distribution by Region</h3>
+        <canvas id="regionChart"></canvas>
+    </div>
     <!-- Login Modal -->
     <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -357,8 +365,50 @@
         // Load museums when the page is loaded
         document.addEventListener('DOMContentLoaded', function() {
             loadMuseumsOnMap();
+            renderRegionChart();
         });
 
+        function renderRegionChart() {
+            axios.get('/api/museums')
+                .then(response => {
+                    const museums = response.data;
+
+                    // Count the number of museums by region
+                    const regionCounts = museums.reduce((acc, museum) => {
+                        acc[museum.region] = (acc[museum.region] || 0) + 1;
+                        return acc;
+                    }, {});
+
+                    // Prepare the data for Chart.js
+                    const regions = Object.keys(regionCounts);
+                    const counts = Object.values(regionCounts);
+
+                    const ctx = document.getElementById('regionChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: regions,
+                            datasets: [{
+                                label: 'Number of Museums',
+                                data: counts,
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading museums:', error);
+                });
+        }
         // Handle Login from Modal
         document.getElementById('modal-login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
